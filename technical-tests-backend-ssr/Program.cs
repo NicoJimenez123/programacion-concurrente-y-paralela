@@ -6,7 +6,11 @@ using Microsoft.OpenApi.Models;
 using technical_tests_backend_ssr.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
-
+Console.WriteLine("appsettings.json configuration:");
+Console.WriteLine($"ConnectionString: {builder.Configuration.GetConnectionString("DefaultConnection")}");
+Console.WriteLine($"Logging Default Level: {builder.Configuration["Logging:LogLevel:Default"]}");
+Console.WriteLine($"Logging Microsoft.AspNetCore Level: {builder.Configuration["Logging:LogLevel:Microsoft.AspNetCore"]}");
+Console.WriteLine($"AllowedHosts: {builder.Configuration["AllowedHosts"]}");
 
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
@@ -26,13 +30,13 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "API SSR Motors – Concesionaria",
+        Title = "API SSR Motors Concesionaria",
         Version = "v1",
-        Description = "Venta y Distribución de Autos",
+        Description = "Venta y DistribuciÃ³n de Autos",
         Contact = new OpenApiContact
         {
-            Name = "Víctor Hugo Contreras",
-            Email = "victor.contreras@docentes.unpaz.edu.ar"
+            Name = "NicolÃ¡s Jimenez",
+            Email = "nicolasdanijimenez@hotmail.com"
         }
     });
 
@@ -44,7 +48,11 @@ builder.Services.AddSwaggerGen(c =>
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 21))));
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 0, 21))
+    )
+);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -57,26 +65,29 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var app = builder.Build();
 
-// Habilitar Swagger
-if (app.Environment.IsDevelopment())
+// Apply migrations
+using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+// Habilitar Swagger
+
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "SSR Motors API v1");
     });
-}
+
 
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.Run();
 
