@@ -10,6 +10,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Producto> Productos { get; set; }
 
+    public DbSet<Cliente> Clientes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Producto>(entity =>
@@ -28,6 +30,29 @@ public class AppDbContext : DbContext
 
             entity.Property(p => p.Stock)
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<Cliente>(entity =>
+        {
+            entity.ToTable("Clientes");
+
+            entity.HasKey(c => c.Id);
+
+            entity.Property(c => c.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(c => c.Apellido)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(c => c.Email)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(c => c.Telefono)
+                .IsRequired()
+                .HasMaxLength(15);
         });
         AppDbContext.Seed(modelBuilder);
     }
