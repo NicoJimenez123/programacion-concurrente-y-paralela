@@ -46,6 +46,34 @@ namespace technical_tests_backend_ssr.Migrations
 
                     b.ToTable("Productos");
                 });
+            modelBuilder.Entity("technical_tests_backend_ssr.Models.Cliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+                        
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clientes");
+                });
 #pragma warning restore 612, 618
         }
     }
