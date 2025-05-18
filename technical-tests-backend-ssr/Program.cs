@@ -59,6 +59,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<ProductService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
