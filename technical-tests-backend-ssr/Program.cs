@@ -14,7 +14,6 @@ Console.WriteLine($"AllowedHosts: {builder.Configuration["AllowedHosts"]}");
 
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<ProductoDTOValidator>();
 
 builder.Services.AddCors(options =>
 {
@@ -58,10 +57,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<ClienteService>();
-builder.Services.AddScoped<ProductService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
