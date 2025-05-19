@@ -31,7 +31,7 @@ public class AppDbContext : DbContext
             entity.HasKey(v => v.Id);
             entity.Property(v => v.Marca).IsRequired().HasMaxLength(50);
             entity.Property(v => v.Modelo).IsRequired().HasMaxLength(50);
-            entity.Property(v => v.Anio).IsRequired();
+            entity.Property(v => v.Año).IsRequired();
             entity.Property(v => v.Precio).IsRequired().HasColumnType("decimal(10,2)");
             entity.Property(v => v.Stock).IsRequired();
         });
@@ -44,12 +44,12 @@ public class AppDbContext : DbContext
             entity.Property(v => v.Total).IsRequired().HasColumnType("decimal(10,2)");
             
             entity.HasOne(v => v.Cliente)
-                .WithMany(c => c.Ventas)
+                .WithMany()
                 .HasForeignKey(v => v.ClienteId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(v => v.Vehiculo)
-                .WithMany(v => v.Ventas)
+                .WithMany()
                 .HasForeignKey(v => v.VehiculoId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -63,7 +63,7 @@ public class AppDbContext : DbContext
             entity.Property(s => s.Estado).IsRequired().HasMaxLength(50);
 
             entity.HasOne(s => s.Cliente)
-                .WithMany(c => c.ServiciosPostVenta)
+                .WithMany()
                 .HasForeignKey(s => s.ClienteId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -82,9 +82,9 @@ public class AppDbContext : DbContext
 
         // Seed Vehículos
         modelBuilder.Entity<Vehiculo>().HasData(
-            new Vehiculo { Id = 1, Marca = "Toyota", Modelo = "Corolla", Anio = 2023, Precio = 25000.00m, Stock = 5 },
-            new Vehiculo { Id = 2, Marca = "Honda", Modelo = "Civic", Anio = 2023, Precio = 23000.00m, Stock = 3 },
-            new Vehiculo { Id = 3, Marca = "Ford", Modelo = "Mustang", Anio = 2023, Precio = 45000.00m, Stock = 2 }
+            new Vehiculo { Id = 1, Marca = "Toyota", Modelo = "Corolla", Año = 2023, Precio = 25000.00m, Stock = 5 },
+            new Vehiculo { Id = 2, Marca = "Honda", Modelo = "Civic", Año = 2023, Precio = 23000.00m, Stock = 3 },
+            new Vehiculo { Id = 3, Marca = "Ford", Modelo = "Mustang", Año = 2023, Precio = 45000.00m, Stock = 2 }
         );
 
         // Seed Ventas
