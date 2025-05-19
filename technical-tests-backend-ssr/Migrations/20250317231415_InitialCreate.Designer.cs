@@ -69,7 +69,7 @@ namespace technical_tests_backend_ssr.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Anio")
+                    b.Property<int>("Año")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Precio")

@@ -75,7 +75,7 @@ namespace technical_tests_backend_ssr.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<int>("Anio")
+                    b.Property<int>("Año")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Precio")
