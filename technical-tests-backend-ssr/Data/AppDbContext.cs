@@ -8,67 +8,97 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Producto> Productos { get; set; }
-
     public DbSet<Cliente> Clientes { get; set; }
+    public DbSet<Vehiculo> Vehiculos { get; set; }
+    public DbSet<Venta> Ventas { get; set; }
+    public DbSet<ServicioPostVenta> ServiciosPostVenta { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Producto>(entity =>
-        {
-            entity.ToTable("Productos");
-
-            entity.HasKey(p => p.Id);
-
-            entity.Property(p => p.Nombre)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(p => p.Precio)
-                .HasColumnType("decimal(10,2)")
-                .IsRequired();
-
-            entity.Property(p => p.Stock)
-                .IsRequired();
-        });
-
         modelBuilder.Entity<Cliente>(entity =>
         {
             entity.ToTable("Clientes");
-
             entity.HasKey(c => c.Id);
-
-            entity.Property(c => c.Nombre)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(c => c.Apellido)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(c => c.Email)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(c => c.Telefono)
-                .IsRequired()
-                .HasMaxLength(15);
+            entity.Property(c => c.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.Apellido).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.Email).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.Telefono).IsRequired().HasMaxLength(15);
         });
+
+        modelBuilder.Entity<Vehiculo>(entity =>
+        {
+            entity.ToTable("Vehiculos");
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.Marca).IsRequired().HasMaxLength(50);
+            entity.Property(v => v.Modelo).IsRequired().HasMaxLength(50);
+            entity.Property(v => v.Anio).IsRequired();
+            entity.Property(v => v.Precio).IsRequired().HasColumnType("decimal(10,2)");
+            entity.Property(v => v.Stock).IsRequired();
+        });
+
+        modelBuilder.Entity<Venta>(entity =>
+        {
+            entity.ToTable("Ventas");
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.Fecha).IsRequired();
+            entity.Property(v => v.Total).IsRequired().HasColumnType("decimal(10,2)");
+            
+            entity.HasOne(v => v.Cliente)
+                .WithMany(c => c.Ventas)
+                .HasForeignKey(v => v.ClienteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(v => v.Vehiculo)
+                .WithMany(v => v.Ventas)
+                .HasForeignKey(v => v.VehiculoId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ServicioPostVenta>(entity =>
+        {
+            entity.ToTable("ServiciosPostVenta");
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.TipoServicio).IsRequired().HasMaxLength(100);
+            entity.Property(s => s.Fecha).IsRequired();
+            entity.Property(s => s.Estado).IsRequired().HasMaxLength(50);
+
+            entity.HasOne(s => s.Cliente)
+                .WithMany(c => c.ServiciosPostVenta)
+                .HasForeignKey(s => s.ClienteId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         AppDbContext.Seed(modelBuilder);
     }
+
     public static void Seed(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Producto>().HasData(
-        new Producto { Id = 1, Nombre = "Cuaderno A4", Precio = 100m, Stock = 10 },
-        new Producto { Id = 2, Nombre = "Lápiz HB", Precio = 200m, Stock = 20 },
-        new Producto { Id = 3, Nombre = "Bolígrafo Azul", Precio = 300m, Stock = 30 },
-        new Producto { Id = 4, Nombre = "Carpeta Cartón", Precio = 400m, Stock = 40 },
-        new Producto { Id = 5, Nombre = "Regla 30 cm", Precio = 500m, Stock = 50 },
-        new Producto { Id = 6, Nombre = "Marcador Amarillo", Precio = 600m, Stock = 60 },
-        new Producto { Id = 7, Nombre = "Tijeras", Precio = 700m, Stock = 70 },
-        new Producto { Id = 8, Nombre = "Pegamento Líquido", Precio = 800m, Stock = 80 },
-        new Producto { Id = 9, Nombre = "Papel Bond", Precio = 900m, Stock = 90 },
-        new Producto { Id = 10, Nombre = "Carpeta de Anillas", Precio = 1000m, Stock = 100 }
+        // Seed Clientes
+        modelBuilder.Entity<Cliente>().HasData(
+            new Cliente { Id = 1, Nombre = "Juan", Apellido = "Pérez", Email = "juan.perez@email.com", Telefono = "1234567890" },
+            new Cliente { Id = 2, Nombre = "María", Apellido = "González", Email = "maria.gonzalez@email.com", Telefono = "0987654321" },
+            new Cliente { Id = 3, Nombre = "Carlos", Apellido = "Rodríguez", Email = "carlos.rodriguez@email.com", Telefono = "5555555555" }
+        );
+
+        // Seed Vehículos
+        modelBuilder.Entity<Vehiculo>().HasData(
+            new Vehiculo { Id = 1, Marca = "Toyota", Modelo = "Corolla", Anio = 2023, Precio = 25000.00m, Stock = 5 },
+            new Vehiculo { Id = 2, Marca = "Honda", Modelo = "Civic", Anio = 2023, Precio = 23000.00m, Stock = 3 },
+            new Vehiculo { Id = 3, Marca = "Ford", Modelo = "Mustang", Anio = 2023, Precio = 45000.00m, Stock = 2 }
+        );
+
+        // Seed Ventas
+        modelBuilder.Entity<Venta>().HasData(
+            new Venta { Id = 1, ClienteId = 1, VehiculoId = 1, Fecha = DateTime.Now.AddDays(-30), Total = 25000.00m },
+            new Venta { Id = 2, ClienteId = 2, VehiculoId = 2, Fecha = DateTime.Now.AddDays(-15), Total = 23000.00m },
+            new Venta { Id = 3, ClienteId = 3, VehiculoId = 3, Fecha = DateTime.Now.AddDays(-7), Total = 45000.00m }
+        );
+
+        // Seed ServiciosPostVenta
+        modelBuilder.Entity<ServicioPostVenta>().HasData(
+            new ServicioPostVenta { Id = 1, ClienteId = 1, TipoServicio = "Mantenimiento Regular", Fecha = DateTime.Now.AddDays(-20), Estado = "Completado" },
+            new ServicioPostVenta { Id = 2, ClienteId = 2, TipoServicio = "Reparación de Frenos", Fecha = DateTime.Now.AddDays(-10), Estado = "En Proceso" },
+            new ServicioPostVenta { Id = 3, ClienteId = 3, TipoServicio = "Cambio de Aceite", Fecha = DateTime.Now.AddDays(-5), Estado = "Pendiente" }
         );
     }
 }
