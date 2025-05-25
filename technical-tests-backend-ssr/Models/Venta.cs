@@ -29,14 +29,4 @@ public class Venta
     /// Monto total de la venta.
     /// </summary>
     public decimal Total { get; set; }
-
-    /// <summary>
-    /// Cliente asociado a esta venta.
-    /// </summary>
-    public Cliente? Cliente { get; set; }
-
-    /// <summary>
-    /// Vehículo asociado a esta venta.
-    /// </summary>
-    public Vehiculo? Vehiculo { get; set; }
 }

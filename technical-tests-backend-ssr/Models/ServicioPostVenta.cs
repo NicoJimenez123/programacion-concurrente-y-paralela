@@ -29,9 +29,4 @@ public class ServicioPostVenta
     /// Estado actual del servicio.
     /// </summary>
     public string Estado { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Cliente asociado a este servicio de posventa.
-    /// </summary>
-    public Cliente? Cliente { get; set; }
 }
