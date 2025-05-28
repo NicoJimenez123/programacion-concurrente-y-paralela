@@ -122,11 +122,11 @@ namespace technical_tests_backend_ssr.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Descripcion")
+                    b.Property<string>("TipoServicio")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("FechaSolicitud")
+                    b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Estado")
