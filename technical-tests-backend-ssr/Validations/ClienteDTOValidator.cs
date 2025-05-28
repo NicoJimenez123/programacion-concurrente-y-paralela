@@ -1,7 +1,13 @@
 using FluentValidation;
 
+/// <summary>
+/// Validador para la entidad ClienteDTO.
+/// </summary>
 public class ClienteDTOValidator : AbstractValidator<ClienteDTO>
 {
+    /// <summary>
+    /// Inicializa una nueva instancia de la clase <see cref="ClienteDTOValidator"/>.
+    /// </summary>
     public ClienteDTOValidator()
     {
         RuleFor(c => c.Nombre)
