@@ -9,6 +9,16 @@ public class VentaDTO
     public int Id { get; set; }
 
     /// <summary>
+    /// Identificador del cliente asociado a la venta.
+    /// </summary>
+    public int ClienteId { get; set; }
+
+    /// <summary>
+    /// Identificador del vehículo asociado a la venta.
+    /// </summary>
+    public int VehiculoId { get; set; }
+
+    /// <summary>
     /// Fecha en la que se realizó la venta.
     /// </summary>
     public DateTime Fecha { get; set; }
@@ -16,10 +26,5 @@ public class VentaDTO
     /// <summary>
     /// Monto total de la venta.
     /// </summary>
-    public decimal MontoTotal { get; set; }
-
-    /// <summary>
-    /// Identificador del cliente asociado a la venta.
-    /// </summary>
-    public int ClienteId { get; set; }
+    public decimal Total { get; set; }
 }
