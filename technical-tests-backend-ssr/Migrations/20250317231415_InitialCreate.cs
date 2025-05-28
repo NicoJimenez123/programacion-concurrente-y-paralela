@@ -87,8 +87,9 @@ namespace technical_tests_backend_ssr.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Fecha = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    MontoTotal = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
-                    ClienteId = table.Column<int>(type: "int", nullable: false)
+                    Total = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    ClienteId = table.Column<int>(type: "int", nullable: false),
+                    VehiculoId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -97,6 +98,12 @@ namespace technical_tests_backend_ssr.Migrations
                         name: "FK_Ventas_Clientes_ClienteId",
                         column: x => x.ClienteId,
                         principalTable: "Clientes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Ventas_Vehiculos_VehiculoId",
+                        column: x => x.VehiculoId,
+                        principalTable: "Vehiculos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
