@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+
 namespace technical_tests_backend_ssr.Models;
 
 /// <summary>
@@ -13,11 +16,15 @@ public class Vehiculo
     /// <summary>
     /// Marca del vehículo.
     /// </summary>
+    [Required]
+    [MaxLength(50)]
     public string Marca { get; set; } = string.Empty;
 
     /// <summary>
     /// Modelo del vehículo.
     /// </summary>
+    [Required]
+    [MaxLength(50)]
     public string Modelo { get; set; } = string.Empty;
 
     /// <summary>
@@ -28,6 +35,7 @@ public class Vehiculo
     /// <summary>
     /// Precio del vehículo.
     /// </summary>
+    [Precision(10, 2)]
     public decimal Precio { get; set; }
 
     /// <summary>
