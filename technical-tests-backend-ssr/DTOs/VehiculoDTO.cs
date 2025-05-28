@@ -21,15 +21,16 @@ public class VehiculoDTO
     /// <summary>
     /// Año de fabricación del vehículo.
     /// </summary>
-    public int Anio { get; set; }
+    public int Año { get; set; }
 
     /// <summary>
-    /// Color del vehículo.
+    /// Precio del vehículo.
     /// </summary>
-    public string Color { get; set; } = string.Empty;
+    public decimal Precio { get; set; }
 
     /// <summary>
-    /// Número de identificación del vehículo (VIN).
+    /// Stock disponible del vehículo.
     /// </summary>
-    public string VIN { get; set; } = string.Empty;
+    public int Stock { get; set; }
+
 }

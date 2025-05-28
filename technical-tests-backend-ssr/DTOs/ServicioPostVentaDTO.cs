@@ -1,6 +1,6 @@
-// <summary>
-// DTO para representar un servicio de postventa.
-// </summary>
+/// <summary>
+/// DTO para representar un servicio de postventa.
+/// </summary>
 public class ServicioPostVentaDTO
 {
     /// <summary>
@@ -9,17 +9,23 @@ public class ServicioPostVentaDTO
     public int Id { get; set; }
 
     /// <summary>
-    /// Descripción del servicio de postventa.
+    /// Identificador del cliente que solicitó el servicio de postventa.
     /// </summary>
-    public string Descripcion { get; set; } = string.Empty;
+    public int ClienteId { get; set; }
+
+    /// <summary>
+    /// Tipo de servicio solicitado.
+    /// </summary>
+    public string TipoServicio { get; set; } = string.Empty;
 
     /// <summary>
     /// Fecha en la que se solicitó el servicio de postventa.
     /// </summary>
-    public DateTime FechaSolicitud { get; set; }
+    public DateTime Fecha { get; set; }
 
     /// <summary>
     /// Estado del servicio de postventa.
     /// </summary>
     public string Estado { get; set; } = string.Empty;
+
 }
