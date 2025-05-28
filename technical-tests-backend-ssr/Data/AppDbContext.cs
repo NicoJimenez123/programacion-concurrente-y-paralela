@@ -43,12 +43,12 @@ public class AppDbContext : DbContext
             entity.Property(v => v.Fecha).IsRequired();
             entity.Property(v => v.Total).IsRequired().HasColumnType("decimal(10,2)");
             
-            entity.HasOne(v => v.Cliente)
+            entity.HasOne<Cliente>()
                 .WithMany()
                 .HasForeignKey(v => v.ClienteId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(v => v.Vehiculo)
+            entity.HasOne<Vehiculo>()
                 .WithMany()
                 .HasForeignKey(v => v.VehiculoId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -62,7 +62,7 @@ public class AppDbContext : DbContext
             entity.Property(s => s.Fecha).IsRequired();
             entity.Property(s => s.Estado).IsRequired().HasMaxLength(50);
 
-            entity.HasOne(s => s.Cliente)
+            entity.HasOne<Cliente>()
                 .WithMany()
                 .HasForeignKey(s => s.ClienteId)
                 .OnDelete(DeleteBehavior.Cascade);
