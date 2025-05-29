@@ -75,6 +75,13 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+
+    // Aquí puedes ejecutar SQL personalizado
+    //var sql = File.ReadAllText("utils/insertar_datos.sql"); // Asegúrate de que el archivo exista
+    //db.Database.ExecuteSqlRaw(sql);
+
+    // Eliminar todas las filas de cada tabla
+    // db.Database.ExecuteSqlRaw("SET FOREIGN_KEY_CHECKS = 0; DELETE FROM ServiciosPostVenta; DELETE FROM Ventas; DELETE FROM Vehiculos; DELETE FROM Clientes; SET FOREIGN_KEY_CHECKS = 1;");
 }
 
 // Habilitar Swagger
