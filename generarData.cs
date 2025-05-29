@@ -1,40 +1,25 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
-class Cliente
+// --- Leer credenciales desde appsettings.json ---
+string appSettingsPath = "technical-tests-backend-ssr/appsettings.json";
+string json = File.ReadAllText(appSettingsPath);
+var match = Regex.Match(json, "\"DefaultConnection\"\\s*:\\s*\"([^\"]+)\"");
+if (!match.Success)
 {
-    public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Apellido { get; set; }
-    public string Email { get; set; }
-    public string Telefono { get; set; }
+    Console.WriteLine("No se pudo encontrar la cadena de conexión en appsettings.json");
+    return;
 }
+string connectionString = match.Groups[1].Value;
 
-class Vehiculo
-{
-    public int Id { get; set; }
-    public string Marca { get; set; }
-    public string Modelo { get; set; }
-    public string Patente { get; set; }
-}
-
-class Venta
-{
-    public int Id { get; set; }
-    public int ClienteId { get; set; }
-    public int VehiculoId { get; set; }
-    public DateTime Fecha { get; set; }
-    public decimal Monto { get; set; }
-}
-
-class ServicioPostVenta
-{
-    public int Id { get; set; }
-    public int VentaId { get; set; }
-    public string Descripcion { get; set; }
-    public DateTime Fecha { get; set; }
-}
+// Extraer datos de la cadena de conexión
+string mysqlUser = Regex.Match(connectionString, @"user=([^;]+)").Groups[1].Value;
+string mysqlPassword = Regex.Match(connectionString, @"password=([^;]+)").Groups[1].Value;
+string mysqlDatabase = Regex.Match(connectionString, @"database=([^;]+)").Groups[1].Value;
+string containerId = "95d1a804dbf2"; // ID de tu contenedor
 
 Random rnd = new Random();
 
@@ -47,53 +32,75 @@ string RandomString(int length)
     return new string(str);
 }
 
-int GetNextId(string filePath)
+// --- Generación de datos e inserción SQL ---
+int cantidad = 10000; // Cambia la cantidad si lo deseas
+
+var clientesSql = new StringBuilder();
+var vehiculosSql = new StringBuilder();
+var ventasSql = new StringBuilder();
+var serviciosSql = new StringBuilder();
+
+for (int i = 1; i <= cantidad; i++)
 {
-    if (!File.Exists(filePath)) return 1;
-    var lines = File.ReadAllLines(filePath);
-    if (lines.Length == 0) return 1;
-    var lastLine = lines[^1];
-    var firstNumber = lastLine.Split(',')[0].Replace("{", "").Trim();
-    if (int.TryParse(firstNumber, out int lastId))
-        return lastId + 1;
-    return 1;
+    int id = i;
+
+    // Cliente
+    string nombre = $"Nombre{id}";
+    string apellido = $"Apellido{id}";
+    string email = $"email{id}@mail.com";
+    string telefono = $"11{rnd.Next(10000000, 99999999)}";
+    clientesSql.AppendLine(
+        $"INSERT INTO Clientes (Id, Nombre, Apellido, Email, Telefono) VALUES ({id}, '{nombre}', '{apellido}', '{email}', '{telefono}');"
+    );
+
+    // Vehiculo
+    string marca = $"Marca{rnd.Next(1, 5)}";
+    string modelo = $"Modelo{rnd.Next(1, 10)}";
+    int año = rnd.Next(2000, 2024);
+    decimal precio = rnd.Next(2000000, 10000000) + rnd.Next(0, 99) / 100m;
+    int stock = rnd.Next(1, 20);
+    vehiculosSql.AppendLine(
+        $"INSERT INTO Vehiculos (Id, Marca, Modelo, Año, Precio, Stock) VALUES ({id}, '{marca}', '{modelo}', {año}, {precio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}, {stock});"
+    );
+
+    // Venta
+    DateTime ventaFecha = DateTime.Now.AddDays(-rnd.Next(1, 100));
+    decimal total = rnd.Next(2000000, 10000000) + rnd.Next(0, 99) / 100m;
+    ventasSql.AppendLine(
+        $"INSERT INTO Ventas (Id, ClienteId, VehiculoId, Fecha, Total) VALUES ({id}, {id}, {id}, '{ventaFecha:yyyy-MM-dd}', {total.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)});"
+    );
+
+    // ServicioPostVenta
+    DateTime servicioFecha = ventaFecha.AddDays(rnd.Next(1, 30));
+    string tipoServicio = $"Servicio tipo {rnd.Next(1, 5)}";
+    string estado = rnd.Next(0, 2) == 0 ? "Pendiente" : "Completado";
+    serviciosSql.AppendLine(
+        $"INSERT INTO ServiciosPostVenta (Id, ClienteId, TipoServicio, Fecha, Estado) VALUES ({id}, {id}, '{tipoServicio}', '{servicioFecha:yyyy-MM-dd}', '{estado}');"
+    );
 }
 
-// --- Código principal global ---
-string clientesFile = "clientes.txt";
-string vehiculosFile = "vehiculos.txt";
-string ventasFile = "ventas.txt";
-string serviciosFile = "servicios.txt";
+// Guardar el script SQL en un archivo temporal
+string scriptFile = "technical-tests-backend-ssr/utils/insertar_datos.sql";
+File.WriteAllText(scriptFile, clientesSql.ToString() + vehiculosSql + ventasSql + serviciosSql);
 
-int nextId = GetNextId(clientesFile);
+// // Ejecutar el script dentro del contenedor Docker
+// string dockerCmd = $"docker exec -i {containerId} mysql -u{mysqlUser} -p{mysqlPassword} {mysqlDatabase} < {scriptFile}";
 
-var clientes = new List<string>();
-var vehiculos = new List<string>();
-var ventas = new List<string>();
-var servicios = new List<string>();
+// // Ejecutar el comando en bash
+// var process = new Process();
+// process.StartInfo.FileName = "/bin/bash";
+// process.StartInfo.Arguments = $"-c \"{dockerCmd}\"";
+// process.StartInfo.RedirectStandardOutput = true;
+// process.StartInfo.RedirectStandardError = true;
+// process.StartInfo.UseShellExecute = false;
+// process.Start();
 
-for (int i = 0; i < 100000; i++)
-{
-    int id = nextId + i;
+// string output = process.StandardOutput.ReadToEnd();
+// string error = process.StandardError.ReadToEnd();
+// process.WaitForExit();
 
-    var cliente = $"{{ {id}, \"Apellido{id}\", \"email{id}@mail.com\", \"Nombre{id}\", \"11{rnd.Next(10000000, 99999999)}\" }}";
-    clientes.Add(cliente);
-
-    var vehiculo = $"{{ {id}, \"Marca{rnd.Next(1, 5)}\", \"Modelo{rnd.Next(1, 10)}\", \"{RandomString(3)}{rnd.Next(100, 999)}\" }}";
-    vehiculos.Add(vehiculo);
-
-    var ventaFecha = DateTime.Now.AddDays(-rnd.Next(1, 100));
-    var venta = $"{{ {id}, {id}, {id}, \"{ventaFecha:yyyy-MM-dd}\", {rnd.Next(100000, 500000)} }}";
-    ventas.Add(venta);
-
-    var servicioFecha = ventaFecha.AddDays(rnd.Next(1, 30));
-    var servicio = $"{{ {id}, {id}, \"Servicio realizado {id}\", \"{servicioFecha:yyyy-MM-dd}\" }}";
-    servicios.Add(servicio);
-}
-
-File.AppendAllLines(clientesFile, clientes);
-File.AppendAllLines(vehiculosFile, vehiculos);
-File.AppendAllLines(ventasFile, ventas);
-File.AppendAllLines(serviciosFile, servicios);
-
-Console.WriteLine("Datos generados y agregados a los archivos.");
+// Console.WriteLine("Ejecución finalizada.");
+// if (!string.IsNullOrEmpty(output))
+//     Console.WriteLine("Salida:\n" + output);
+// if (!string.IsNullOrEmpty(error))
+//     Console.WriteLine("Errores:\n" + error);
