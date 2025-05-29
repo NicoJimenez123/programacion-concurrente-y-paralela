@@ -57,31 +57,6 @@ namespace technical_tests_backend_ssr.Migrations
 
                     b.ToTable("Clientes", (string)null);
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Apellido = "Pérez",
-                            Email = "juan.perez@email.com",
-                            Nombre = "Juan",
-                            Telefono = "1234567890"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Apellido = "González",
-                            Email = "maria.gonzalez@email.com",
-                            Nombre = "María",
-                            Telefono = "0987654321"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Apellido = "Rodríguez",
-                            Email = "carlos.rodriguez@email.com",
-                            Nombre = "Carlos",
-                            Telefono = "5555555555"
-                        });
                 });
 
             modelBuilder.Entity("technical_tests_backend_ssr.Models.ServicioPostVenta", b =>
@@ -114,31 +89,6 @@ namespace technical_tests_backend_ssr.Migrations
 
                     b.ToTable("ServiciosPostVenta", (string)null);
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClienteId = 1,
-                            Estado = "Completado",
-                            Fecha = new DateTime(2025, 5, 8, 21, 55, 55, 815, DateTimeKind.Local).AddTicks(6808),
-                            TipoServicio = "Mantenimiento Regular"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClienteId = 2,
-                            Estado = "En Proceso",
-                            Fecha = new DateTime(2025, 5, 18, 21, 55, 55, 815, DateTimeKind.Local).AddTicks(6811),
-                            TipoServicio = "Reparación de Frenos"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClienteId = 3,
-                            Estado = "Pendiente",
-                            Fecha = new DateTime(2025, 5, 23, 21, 55, 55, 815, DateTimeKind.Local).AddTicks(6813),
-                            TipoServicio = "Cambio de Aceite"
-                        });
                 });
 
             modelBuilder.Entity("technical_tests_backend_ssr.Models.Vehiculo", b =>
@@ -173,34 +123,6 @@ namespace technical_tests_backend_ssr.Migrations
 
                     b.ToTable("Vehiculos", (string)null);
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Año = 2023,
-                            Marca = "Toyota",
-                            Modelo = "Corolla",
-                            Precio = 25000.00m,
-                            Stock = 5
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Año = 2023,
-                            Marca = "Honda",
-                            Modelo = "Civic",
-                            Precio = 23000.00m,
-                            Stock = 3
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Año = 2023,
-                            Marca = "Ford",
-                            Modelo = "Mustang",
-                            Precio = 45000.00m,
-                            Stock = 2
-                        });
                 });
 
             modelBuilder.Entity("technical_tests_backend_ssr.Models.Venta", b =>
@@ -232,31 +154,6 @@ namespace technical_tests_backend_ssr.Migrations
 
                     b.ToTable("Ventas", (string)null);
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClienteId = 1,
-                            Fecha = new DateTime(2025, 4, 28, 21, 55, 55, 815, DateTimeKind.Local).AddTicks(6742),
-                            Total = 25000.00m,
-                            VehiculoId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClienteId = 2,
-                            Fecha = new DateTime(2025, 5, 13, 21, 55, 55, 815, DateTimeKind.Local).AddTicks(6776),
-                            Total = 23000.00m,
-                            VehiculoId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClienteId = 3,
-                            Fecha = new DateTime(2025, 5, 21, 21, 55, 55, 815, DateTimeKind.Local).AddTicks(6779),
-                            Total = 45000.00m,
-                            VehiculoId = 3
-                        });
                 });
 
             modelBuilder.Entity("technical_tests_backend_ssr.Models.ServicioPostVenta", b =>
