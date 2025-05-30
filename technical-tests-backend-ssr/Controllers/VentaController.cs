@@ -40,19 +40,28 @@ public class VentaController : ControllerBase
         await _ventaService.AddAsync(venta);
         return CreatedAtAction(nameof(GetById), new { id = venta.Id }, _mapper.Map<VentaDTO>(venta));
     }
-    
+
     [HttpPut("{id}")]
     public async Task<ActionResult<VentaDTO>> Update(int id, VentaDTO ventaDTO)
-    { 
+    {
         var venta = _mapper.Map<Venta>(ventaDTO);
         await _ventaService.UpdateAsync(venta);
         return Ok(_mapper.Map<VentaDTO>(venta));
     }
-    
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _ventaService.DeleteAsync(id);
         return NoContent();
+    }
+    
+    [HttpGet("{id}/factura")]
+    public async Task<ActionResult<FacturaVentaDTO>> GetFactura(int id)
+    {
+        var factura = await _ventaService.GetFacturaByVentaIdAsync(id);
+        if (factura == null)
+            return NotFound();
+        return Ok(factura);
     }
 }
