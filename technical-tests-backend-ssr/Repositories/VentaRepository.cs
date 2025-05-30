@@ -45,4 +45,11 @@ public class VentaRepository : IVentaRepository
         _context.Ventas.Remove(venta);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<Venta>> GetAllVentasByClienteId(int clienteId)
+    {
+        return await _context.Ventas
+            .Where(v => v.ClienteId == clienteId)
+            .ToListAsync();
+    }
 }

@@ -9,5 +9,6 @@ namespace technical_tests_backend_ssr.Repositories
         Task AddAsync(Venta venta);
         Task UpdateAsync(Venta venta);
         Task DeleteAsync(int id);
-    }
+        Task<IEnumerable<Venta>> GetAllVentasByClienteId(int clienteId);
+  }
 }

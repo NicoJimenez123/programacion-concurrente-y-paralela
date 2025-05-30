@@ -29,9 +29,21 @@ public class VentaService
     {
         await _ventaRepository.UpdateAsync(venta);
     }
-    
+
     public async Task DeleteAsync(int id)
     {
         await _ventaRepository.DeleteAsync(id);
+    }
+    
+    public async Task<IEnumerable<VentaDTO>> GetAllVentasByClienteId(int clienteId)
+    {
+        var ventas = await _ventaRepository.GetAllVentasByClienteId(clienteId);
+        return ventas.Select(v => new VentaDTO
+        {
+            Id = v.Id,
+            Fecha = v.Fecha,
+            Total = v.Total,
+            ClienteId = v.ClienteId
+        });
     }
 }

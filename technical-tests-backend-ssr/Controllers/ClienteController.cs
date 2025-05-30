@@ -96,4 +96,15 @@ public class ClienteController : ControllerBase
     await _clienteService.DeleteClienteAsync(cliente);
     return NoContent();
   }
+
+  /// <summary>
+  /// Historial de compras de un cliente
+  /// </summary>
+  [HttpGet("{id}/compras")]
+  public async Task<ActionResult<IEnumerable<VentaDTO>>> GetHistorialCompras(int id)
+  {
+    var compras = await _clienteService.GetAllCompras(id);
+    if (compras == null || !compras.Any()) return NotFound("No se encontraron compras para este cliente.");
+    return Ok(compras);
+  }
 }
