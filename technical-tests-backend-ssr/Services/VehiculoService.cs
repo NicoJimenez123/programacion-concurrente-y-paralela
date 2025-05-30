@@ -1,3 +1,4 @@
+using System.Numerics;
 using technical_tests_backend_ssr.Models;
 using technical_tests_backend_ssr.Repositories;
 
@@ -38,5 +39,15 @@ public class VehiculoService
     public async Task DeleteAsync(int id)
     {
         await _vehiculoRepository.DeleteAsync(id);
+    }
+
+    public async Task<int> GetStockByIdAsync(int id)
+    {
+        var vehiculo = await _vehiculoRepository.GetByIdAsync(id);
+        if (vehiculo == null)
+        {
+            throw new KeyNotFoundException("Vehículo no encontrado");
+        }
+        return vehiculo.Stock;
     }
 }

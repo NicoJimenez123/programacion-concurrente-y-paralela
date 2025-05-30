@@ -65,4 +65,36 @@ public class VehiculoController : ControllerBase
         await _vehiculoService.DeleteAsync(id);
         return NoContent();
     }
+
+    [HttpGet("{id}/stock")]
+    public async Task<ActionResult<int>> GetStockById(int id)
+    {
+        var stock = await _vehiculoService.GetStockByIdAsync(id);
+        if (stock == null)
+        {
+            return NotFound();
+        }
+        return Ok(stock);
+    }
+
+    [HttpGet("{id}/caracteristicas")]
+    public async Task<ActionResult<VehiculoCaracteristicasDTO>> GetVehiculoCaracteristicas(int id)
+    {
+        var vehiculo = await _vehiculoService.GetByIdAsync(id);
+        if (vehiculo == null)
+            return NotFound();
+
+        var dto = _mapper.Map<VehiculoCaracteristicasDTO>(vehiculo);
+        return Ok(dto);
+    }
+
+    [HttpGet("{id}/precio")]
+    public async Task<ActionResult<decimal>> GetPrecioById(int id)
+    {
+        var vehiculo = await _vehiculoService.GetByIdAsync(id);
+        if (vehiculo == null)
+            return NotFound();
+
+        return Ok(vehiculo.Precio);
+    }
 }

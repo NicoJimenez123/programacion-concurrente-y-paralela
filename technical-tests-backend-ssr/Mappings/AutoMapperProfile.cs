@@ -13,6 +13,7 @@ public class AutoMapperProfile : Profile
         CreateMap<VentaDTO, Venta>();
         CreateMap<ServicioPostVenta, ServicioPostVentaDTO>();
         CreateMap<ServicioPostVentaDTO, ServicioPostVenta>();
+        CreateMap<Vehiculo, VehiculoCaracteristicasDTO>();
     }
 }
 
