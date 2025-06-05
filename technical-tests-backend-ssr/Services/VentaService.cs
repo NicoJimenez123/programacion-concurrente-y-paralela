@@ -173,7 +173,7 @@ public class VentaService
         {
             return Enumerable.Empty<Venta>();
         }
-        
+
         // Utilizo AsParallel para filtrar las ventas que superen el monto especificado
         var ventasFiltradas = ventas.AsParallel().Where(v => v.Total > monto).ToList();
 

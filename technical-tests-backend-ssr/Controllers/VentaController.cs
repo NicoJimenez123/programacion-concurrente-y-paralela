@@ -99,4 +99,50 @@ public class VentaController : ControllerBase
         var ventas = await _ventaService.GetVentasByMontoParalelo(monto);
         return Ok(_mapper.Map<IEnumerable<VentaDTO>>(ventas));
     }
+
+    [HttpPost("procesar-ventas")]
+    public async Task<IActionResult> ProcesarVentas()
+    {
+        var ventas = await _ventaService.GetAllAsync();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        // procesar elementos en paralelo y sin intereses en el resultado
+        Parallel.ForEach(ventas, venta =>
+        {
+            // Procesamiento intensivo por cada venta
+            ProcesarVenta(venta);
+        });
+        stopwatch.Stop();
+        Console.WriteLine($"Tiempo de procesamiento paralelo: {stopwatch.ElapsedMilliseconds} ms");
+
+        // Comparar con ventas.AsParallel()
+        var stopwatchParallel = System.Diagnostics.Stopwatch.StartNew();
+        // transformar y recolectar resultados
+        var ventasParalelas = ventas.AsParallel().Select(venta => ProcesarVenta(venta)).ToList();
+        stopwatchParallel.Stop();
+        Console.WriteLine($"Tiempo de procesamiento paralelo con AsParallel: {stopwatchParallel.ElapsedMilliseconds} ms");
+
+        return Ok("Procesamiento paralelo finalizado.");
+
+        /*
+            Resultados:
+            Intento 1: Tiempo de procesamiento paralelo: 8171 ms
+            Intento 1: Tiempo de procesamiento paralelo con AsParallel: 8515 ms        
+            Intento 2: Tiempo de procesamiento paralelo: 7497 ms
+            Intento 2: Tiempo de procesamiento paralelo con AsParallel: 8500 ms        
+            Intento 3: Tiempo de procesamiento paralelo: 5721 ms
+            Intento 3: Tiempo de procesamiento paralelo con AsParallel: 8564 ms        
+            Intento 4: Tiempo de procesamiento paralelo: 7392 ms
+            Intento 5: Tiempo de procesamiento paralelo con AsParallel: 8594 ms        
+            Intento 5: Tiempo de procesamiento paralelo: 8029 ms
+            Intento 5: Tiempo de procesamiento paralelo con AsParallel: 8564 ms
+        */
+    }
+
+    private Venta ProcesarVenta(Venta venta)
+    {
+        // Simula una operación costosa por cada venta
+        System.Threading.Thread.Sleep(10); // Simula un procesamiento intensivo
+                                            // Aquí podrías agregar lógica adicional para procesar la venta
+        return venta; // Retorna la venta procesada si es necesario
+    }
 }
