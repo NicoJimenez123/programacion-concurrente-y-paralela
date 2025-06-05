@@ -55,7 +55,7 @@ public class VentaController : ControllerBase
         await _ventaService.DeleteAsync(id);
         return NoContent();
     }
-    
+
     [HttpGet("{id}/factura")]
     public async Task<ActionResult<FacturaVentaDTO>> GetFactura(int id)
     {
@@ -63,5 +63,40 @@ public class VentaController : ControllerBase
         if (factura == null)
             return NotFound();
         return Ok(factura);
+    }
+
+    [HttpGet("ganancias/totales/paralela")]
+    public async Task<ActionResult<decimal>> GetGananciasParalelas()
+    {
+        var ganancias = await _ventaService.GetGananciasParalelasAllTime();
+        return Ok(ganancias);
+    }
+
+    [HttpGet("ganancias/totales/secuencial")]
+    public async Task<ActionResult<decimal>> GetGananciasSecuenciales()
+    {
+        var ganancias = await _ventaService.GetGananciasSecuencialesAllTime();
+        return Ok(ganancias);
+    }
+
+    [HttpGet("demostracion/paralelismo")]
+    public async Task<ActionResult<object>> DemostracionParalelismo()
+    {
+        (long secuencialMs, long paraleloMs, decimal resultadoSecuencial, decimal resultadoParalelo) = await _ventaService.DemostracionParalelismo();
+        return Ok(new
+        {
+            SecuencialMs = secuencialMs,
+            ParaleloMs = paraleloMs,
+            ResultadoSecuencial = resultadoSecuencial,
+            ResultadoParalelo = resultadoParalelo
+        });
+    }
+
+    // Ventas que superen X monto
+    [HttpGet("mayores-a/{monto}")]
+    public async Task<ActionResult<IEnumerable<VentaDTO>>> GetVentasMayoresA(decimal monto)
+    {
+        var ventas = await _ventaService.GetVentasByMontoParalelo(monto);
+        return Ok(_mapper.Map<IEnumerable<VentaDTO>>(ventas));
     }
 }
