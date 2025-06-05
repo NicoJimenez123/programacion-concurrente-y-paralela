@@ -37,6 +37,10 @@ public class VentaService
         await _ventaRepository.UpdateAsync(venta);
     }
 
+    /// <summary>
+    /// Elimina una venta por su identificador.
+    /// </summary>
+    /// <param name="id">El identificador de la venta a eliminar.</param>
     public async Task DeleteAsync(int id)
     {
         await _ventaRepository.DeleteAsync(id);
@@ -68,7 +72,7 @@ public class VentaService
         var vehiculo = _vehiculoRepository.GetByIdAsync(factura.VehiculoId);
         var vehiculoCaracteristicas = vehiculo.Result != null ?
             _mapper.Map<VehiculoCaracteristicasDTO>(vehiculo.Result) : null;
-        
+
 
         return new FacturaVentaDTO
         {
@@ -78,5 +82,101 @@ public class VentaService
             Total = factura.Total,
             Fecha = factura.Fecha
         };
+    }
+
+    /// <summary>
+    /// Usando programación paralela, se obtiene la suma total de las ganancias de todas las ventas registradas.
+    /// </summary>
+    /// <returns>El monto total de las ganancias de todas las ventas.</returns>
+    public async Task<decimal> GetGananciasParalelasAllTime()
+    {
+        // Obtengo todas las ventas y utilizando paralelismo calculo las ganancias
+        var ventas = await _ventaRepository.GetAllAsync();
+        if (ventas == null || !ventas.Any())
+        {
+            return 0;
+        }
+        // Utilizo AsParallel para realizar el cálculo de manera paralela
+        // y luego sumo los totales de cada venta
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var ganancias = ventas.AsParallel().Select(v =>
+            { return v.Total % 2 == 0 ? v.Total * 2m : v.Total * 0.5m; }
+        ).Sum();
+        stopwatch.Stop();
+        Console.WriteLine($"Tiempo de ejecución (paralelo): {stopwatch.ElapsedMilliseconds} ms");
+        return ganancias;
+    }
+
+    /// <summary>
+    /// Usando programación secuencial, se obtiene la suma total de las ganancias de todas las ventas registradas.
+    /// </summary>
+    /// <returns>El monto total de las ganancias de todas las ventas.</returns>
+    public async Task<decimal> GetGananciasSecuencialesAllTime()
+    {
+        // Obtengo todas las ventas y utilizando paralelismo calculo las ganancias
+        var ventas = await _ventaRepository.GetAllAsync();
+        if (ventas == null || !ventas.Any())
+        {
+            return 0;
+        }
+        // Utilizo AsParallel para realizar el cálculo de manera paralela
+        // y luego sumo los totales de cada venta
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var ganancias = ventas.Select(v =>
+            { return v.Total % 2 == 0 ? v.Total * 2m : v.Total * 0.5m; }
+        ).Sum();
+        stopwatch.Stop();
+        Console.WriteLine($"Tiempo de ejecución (secuencial): {stopwatch.ElapsedMilliseconds} ms");
+        return ganancias;
+    }
+
+    /// <summary>
+    /// Simula una operación costosa por cada venta y compara el tiempo de ejecución secuencial vs paralelo.
+    /// </summary>
+    public async Task<(long secuencialMs, long paraleloMs, decimal resultadoSecuencial, decimal resultadoParalelo)> DemostracionParalelismo()
+    {
+        var ventas = await _ventaRepository.GetAllAsync();
+        if (ventas == null || !ventas.Any())
+            return (0, 0, 0, 0);
+
+        // Simula una operación costosa (por ejemplo, espera de 10ms por venta)
+        decimal OperacionCostosa(Venta v)
+        {
+            // Simula trabajo pesado
+            System.Threading.Thread.Sleep(10);
+            return v.Total * 1.1m;
+        }
+
+        // Secuencial
+        var swSec = System.Diagnostics.Stopwatch.StartNew();
+        var resultadoSecuencial = ventas.Select(OperacionCostosa).Sum();
+        swSec.Stop();
+
+        // Paralelo
+        var swPar = System.Diagnostics.Stopwatch.StartNew();
+        var resultadoParalelo = ventas.AsParallel().Select(OperacionCostosa).Sum();
+        swPar.Stop();
+
+        Console.WriteLine($"Tiempo secuencial: {swSec.ElapsedMilliseconds} ms");
+        Console.WriteLine($"Tiempo paralelo: {swPar.ElapsedMilliseconds} ms");
+
+        return (swSec.ElapsedMilliseconds, swPar.ElapsedMilliseconds, resultadoSecuencial, resultadoParalelo);
+    }
+
+    /// <summary>
+    /// Obtener de forma paralela todas las ventas que superen un monto específico.
+    /// </summary>
+    public async Task<IEnumerable<Venta>> GetVentasByMontoParalelo(decimal monto)
+    {
+        var ventas = await _ventaRepository.GetAllAsync();
+        if (ventas == null || !ventas.Any())
+        {
+            return Enumerable.Empty<Venta>();
+        }
+        
+        // Utilizo AsParallel para filtrar las ventas que superen el monto especificado
+        var ventasFiltradas = ventas.AsParallel().Where(v => v.Total > monto).ToList();
+
+        return ventasFiltradas;
     }
 }
