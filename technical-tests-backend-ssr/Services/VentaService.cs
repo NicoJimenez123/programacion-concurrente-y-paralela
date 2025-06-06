@@ -179,4 +179,113 @@ public class VentaService
 
         return ventasFiltradas;
     }
+
+    /// <summary>
+    /// Procesar ventas menores a X monto de forma paralela.
+    /// </summary>
+    public async Task<string> GetVentasByMontoMenorParalelo(decimal monto)
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var ventas = await this.GetAllAsync();
+
+        var tareas = new List<Task>();
+
+        foreach (var venta in ventas)
+        {
+            // Crear cada Task con Task.Run 
+            var tarea = Task.Run(() =>
+            {
+                Thread.Sleep(10);
+                if (venta.Total > 9000000)
+                {
+                    throw new InvalidOperationException(
+                        $"Venta con ID {venta.Id} tiene un monto demasiado alto: {venta.Total}"
+                    );
+                }
+            });
+
+            tareas.Add(tarea);
+        }
+
+        Task whenAllTask = Task.WhenAll(tareas);
+
+        try
+        {
+            // await para dejar que se ejecuten todas las subtareas en paralelo,
+            await whenAllTask;
+        }
+        catch
+        {
+            // Cuando hacemos await sobre whenAllTask y alguna subtarea falla, el await lanza
+            // directamente la primera excepción interna, así que llegamos acá en el catch genérico.
+            // Para recuperar todas las excepciones, miramos la propiedad .Exception de la tarea compuesta.
+            if (whenAllTask.Exception is AggregateException aggEx)
+            {
+                foreach (var ex in aggEx.InnerExceptions)
+                {
+                    Console.WriteLine($"Excepción capturada: {ex.Message}");
+                }
+                Console.WriteLine("Cantidad de excepciones capturadas: " + aggEx.InnerExceptions.Count);
+            }
+            else
+            {
+                // Sólo por si hubiera alguna otra anomalía, imprimiríamos el mensaje:
+                Console.WriteLine($"Excepción inesperada sin contenedor Aggregate: {whenAllTask.Exception?.Message}");
+            }
+        }
+
+        // Una vez que llegamos aquí, todos los items ya fueron procesados.
+        Console.WriteLine("Todos los elementos fueron procesados.");
+        stopwatch.Stop();
+        Console.WriteLine($"Tiempo de procesamiento paralelo: {stopwatch.ElapsedMilliseconds} ms");
+
+        return "Procesamiento paralelo finalizado.";
+
+        /*
+            Resultados:
+            Tiempo de procesamiento paralelo: 5119 ms
+            Tiempo de procesamiento paralelo: 4848 ms
+            Tiempo de procesamiento paralelo: 3907 ms
+        */
+    }
+    
+    /// <summary>
+    /// Procesar ventas menores a X monto de forma paralela.
+    /// </summary>
+    public async Task<string> GetVentasByMontoMenorSecuencial(decimal monto)
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var ventas = await this.GetAllAsync();
+
+        foreach (var venta in ventas)
+        {
+            try
+            {
+                Thread.Sleep(10);
+                if (venta.Total > 9000000)
+                {
+                    throw new InvalidOperationException(
+                    $"Venta con ID {venta.Id} tiene un monto demasiado alto: {venta.Total}"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción capturada: {ex.Message}");
+            }
+        }
+
+        Console.WriteLine("Todos los elementos fueron procesados.");
+        stopwatch.Stop();
+        Console.WriteLine($"Tiempo de procesamiento secuencial: {stopwatch.ElapsedMilliseconds} ms");
+
+        return"Procesamiento secuencial finalizado.";
+        
+        /*
+            Resultados:
+            Tiempo de procesamiento secuencial: 100888 ms
+            Tiempo de procesamiento secuencial: 100891 ms
+            Tiempo de procesamiento secuencial: 100911 ms
+        */
+    }
 }
