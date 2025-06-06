@@ -138,11 +138,41 @@ public class VentaController : ControllerBase
         */
     }
 
+    [HttpPost("procesar-ventas/paralelo/{monto}")]
+    public async Task<IActionResult> ProcesarVentasParalelo(int monto)
+    {
+        if (monto <= 0)
+        {
+            return BadRequest("El monto debe ser mayor que cero.");
+        }
+        else if (monto > 10000000)
+        {
+            return BadRequest("El monto no puede ser mayor a 10,000,000.");
+        }
+        var ventas = await _ventaService.GetVentasByMontoMenorParalelo(monto);
+        return Ok(ventas);
+    }
+
+    [HttpPost("procesar-ventas/secuencial/{monto}")]
+    public async Task<IActionResult> ProcesarVentasSecuencial(int monto)
+    {
+        if (monto <= 0)
+        {
+            return BadRequest("El monto debe ser mayor que cero.");
+        }
+        else if (monto > 10000000)
+        {
+            return BadRequest("El monto no puede ser mayor a 10,000,000.");
+        }
+        var ventas = await _ventaService.GetVentasByMontoMenorSecuencial(monto);
+        return Ok(ventas);
+    }
+
     private Venta ProcesarVenta(Venta venta)
     {
         // Simula una operación costosa por cada venta
         System.Threading.Thread.Sleep(10); // Simula un procesamiento intensivo
-                                            // Aquí podrías agregar lógica adicional para procesar la venta
+                                           // Aquí podrías agregar lógica adicional para procesar la venta
         return venta; // Retorna la venta procesada si es necesario
     }
 }
