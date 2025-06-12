@@ -1,6 +1,7 @@
 using technical_tests_backend_ssr.Models;
 using technical_tests_backend_ssr.Repositories;
 using AutoMapper;
+using System.Threading.Tasks.Dataflow;
 
 public class VentaService
 {
@@ -248,7 +249,7 @@ public class VentaService
             Tiempo de procesamiento paralelo: 3907 ms
         */
     }
-    
+
     /// <summary>
     /// Procesar ventas menores a X monto de forma paralela.
     /// </summary>
@@ -279,13 +280,89 @@ public class VentaService
         stopwatch.Stop();
         Console.WriteLine($"Tiempo de procesamiento secuencial: {stopwatch.ElapsedMilliseconds} ms");
 
-        return"Procesamiento secuencial finalizado.";
-        
+        return "Procesamiento secuencial finalizado.";
+
         /*
             Resultados:
             Tiempo de procesamiento secuencial: 100888 ms
             Tiempo de procesamiento secuencial: 100891 ms
             Tiempo de procesamiento secuencial: 100911 ms
         */
+    }
+
+    /// <summary>
+    /// Procesa ventas usando Dataflow: filtra, transforma y registra ventas mayores a un monto.
+    /// </summary>
+    public async Task<string> ProcesarVentasConDataflow(decimal montoMinimo)
+    {
+        var ventas = await _ventaRepository.GetAllAsync();
+        if (ventas == null || !ventas.Any())
+            return "No hay ventas para procesar.";
+
+        // Mostrar tiempo
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        Console.WriteLine($"Iniciando procesamiento de ventas con Dataflow. Monto mínimo: {montoMinimo}");
+        stopwatch.Start();
+        // BufferBlock: recibe todas las ventas
+        var bufferBlock = new BufferBlock<Venta>();
+
+        // TransformBlock: filtra y transforma ventas mayores al monto mínimo a DTO
+        var transformBlock = new TransformBlock<Venta, VentaDTO>(venta =>
+        {
+            if (venta.Total > montoMinimo)
+            {
+                // Registro de la venta en consola
+                Console.WriteLine($"Procesando venta: ID={venta.Id}, Total={venta.Total}");
+                // Sleep random para simular procesamiento intensivo
+                Thread.Sleep(new Random().Next(10, 100));
+                return new VentaDTO
+                {
+                    Id = venta.Id,
+                    Fecha = venta.Fecha,
+                    Total = venta.Total,
+                    ClienteId = venta.ClienteId
+                };
+            }
+            return null!;
+        }, new ExecutionDataflowBlockOptions
+        {
+            MaxDegreeOfParallelism = -1 // Todos los hilos disponibles para el TransformBlock
+        });
+
+        // ActionBlock: registra la venta procesada
+        var actionBlock = new ActionBlock<VentaDTO>(ventaDto =>
+        {
+            if (ventaDto != null)
+            {
+            // Sleep random para simular procesamiento intensivo
+            Thread.Sleep(new Random().Next(30, 300));
+            Console.WriteLine($"Venta procesada: ID={ventaDto.Id}, Total={ventaDto.Total}");
+            }
+        }, new ExecutionDataflowBlockOptions
+        {
+            MaxDegreeOfParallelism = -1 // Todos los hilos disponibles para el ActionBlock
+        });
+
+        // Enlazar los bloques
+        bufferBlock.LinkTo(transformBlock, new DataflowLinkOptions { PropagateCompletion = true });
+        transformBlock.LinkTo(actionBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+        // Opcional: descartar nulos
+        transformBlock.LinkTo(new ActionBlock<VentaDTO>(_ => { }), ventaDto => ventaDto == null);
+
+        // Postear ventas al buffer
+        foreach (var venta in ventas)
+        {
+            await bufferBlock.SendAsync(venta);
+        }
+
+        bufferBlock.Complete();
+
+        // Esperar a que termine el procesamiento
+        await actionBlock.Completion;
+
+        stopwatch.Stop();
+        Console.WriteLine($"Procesamiento de ventas con Dataflow finalizado en {stopwatch.ElapsedMilliseconds} ms");
+        return "Procesamiento Dataflow finalizado.";
     }
 }

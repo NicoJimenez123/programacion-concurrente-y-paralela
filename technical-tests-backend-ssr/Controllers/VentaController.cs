@@ -168,6 +168,21 @@ public class VentaController : ControllerBase
         return Ok(ventas);
     }
 
+    [HttpPost("procesar-ventas/dataflow/{monto}")]
+    public async Task<IActionResult> ProcesarVentasDataflow(int monto)
+    {
+        if (monto <= 0)
+        {
+            return BadRequest("El monto debe ser mayor que cero.");
+        }
+        else if (monto > 10000000)
+        {
+            return BadRequest("El monto no puede ser mayor a 10,000,000.");
+        }
+        var ventas = await _ventaService.ProcesarVentasConDataflow(monto);
+        return Ok(ventas);
+    }
+
     private Venta ProcesarVenta(Venta venta)
     {
         // Simula una operación costosa por cada venta
