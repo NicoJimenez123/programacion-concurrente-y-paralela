@@ -326,7 +326,7 @@ public class VentaService
             return null!;
         }, new ExecutionDataflowBlockOptions
         {
-            MaxDegreeOfParallelism = -1 // Todos los hilos disponibles para el TransformBlock
+            MaxDegreeOfParallelism = 3 // 3 hilos disponibles para el TransformBlock
         });
 
         // ActionBlock: registra la venta procesada
@@ -343,9 +343,31 @@ public class VentaService
             MaxDegreeOfParallelism = -1 // Todos los hilos disponibles para el ActionBlock
         });
 
+        // ActionBlock: Multiplicar el total de la venta por 2 si es par, o por 0.5 si es impar
+        var multiplicarBlock = new ActionBlock<VentaDTO>(ventaDto =>
+        {
+            if (ventaDto != null)
+            {
+                // Multiplicar el total de la venta por 2 si es par, o por 0.5 si es impar
+                ventaDto.Total = ventaDto.Total % 2 == 0 ? ventaDto.Total * 2 : ventaDto.Total * 0.5m;
+                Console.WriteLine($"Venta multiplicada: ID={ventaDto.Id}, Total={ventaDto.Total}");
+            }
+        }, new ExecutionDataflowBlockOptions
+        {
+            MaxDegreeOfParallelism = -1 // Todos los hilos disponibles para el ActionBlock
+        });
+
         // Enlazar los bloques
         bufferBlock.LinkTo(transformBlock, new DataflowLinkOptions { PropagateCompletion = true });
-        transformBlock.LinkTo(actionBlock, new DataflowLinkOptions { PropagateCompletion = true });
+        // Crear un BroadcastBlock para enviar cada VentaDTO a múltiples destinos
+        var broadcastBlock = new BroadcastBlock<VentaDTO>(ventaDto => ventaDto);
+
+        // Enlazar el transformBlock al broadcastBlock
+        transformBlock.LinkTo(broadcastBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+        // Enlazar el broadcastBlock tanto al actionBlock como al multiplicarBlock
+        broadcastBlock.LinkTo(actionBlock, new DataflowLinkOptions { PropagateCompletion = true });
+        broadcastBlock.LinkTo(multiplicarBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
         // Opcional: descartar nulos
         transformBlock.LinkTo(new ActionBlock<VentaDTO>(_ => { }), ventaDto => ventaDto == null);
